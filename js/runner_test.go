@@ -76,7 +76,9 @@ func TestRunnerNew(t *testing.T) {
 			assert.True(t, ok)
 			assert.Equal(t, int64(0), vuc.Runtime.Get("counter").Export())
 
-			vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 			t.Run("RunOnce", func(t *testing.T) {
 				err = vu.RunOnce()
 				assert.NoError(t, err)
@@ -164,7 +166,9 @@ func TestOptionsSettingToScript(t *testing.T) {
 			samples := make(chan stats.SampleContainer, 100)
 			initVU, err := r.NewVU(1, samples)
 			if assert.NoError(t, err) {
-				vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+				ctx, cancel := context.WithCancel(context.Background())
+				defer cancel()
+				vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 				err := vu.RunOnce()
 				assert.NoError(t, err)
 			}
@@ -211,8 +215,9 @@ func TestOptionsPropagationToScript(t *testing.T) {
 
 			initVU, err := r.NewVU(1, samples)
 			if assert.NoError(t, err) {
-
-				vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+				ctx, cancel := context.WithCancel(context.Background())
+				defer cancel()
+				vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 				err := vu.RunOnce()
 				assert.NoError(t, err)
 			}
@@ -337,7 +342,9 @@ func testSetupDataHelper(t *testing.T, data string) {
 			}
 			initVU, err := r.NewVU(1, samples)
 			if assert.NoError(t, err) {
-				vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+				ctx, cancel := context.WithCancel(context.Background())
+				defer cancel()
+				vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 				err := vu.RunOnce()
 				assert.NoError(t, err)
 			}
@@ -396,7 +403,9 @@ func TestConsoleInInitContext(t *testing.T) {
 			samples := make(chan stats.SampleContainer, 100)
 			initVU, err := r.NewVU(1, samples)
 			if assert.NoError(t, err) {
-				vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+				ctx, cancel := context.WithCancel(context.Background())
+				defer cancel()
+				vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 				err := vu.RunOnce()
 				assert.NoError(t, err)
 			}
@@ -471,7 +480,9 @@ func TestRunnerIntegrationImports(t *testing.T) {
 					t.Run(name, func(t *testing.T) {
 						initVU, err := r.NewVU(1, make(chan stats.SampleContainer, 100))
 						require.NoError(t, err)
-						vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+						ctx, cancel := context.WithCancel(context.Background())
+						defer cancel()
+						vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 						err = vu.RunOnce()
 						require.NoError(t, err)
 					})
@@ -518,7 +529,9 @@ func TestVURunContext(t *testing.T) {
 					assert.Equal(t, vu.Transport, state.Transport)
 				}
 			})
-			activeVU := vu.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			activeVU := vu.Activate(&lib.VUActivationParams{RunContext: ctx})
 			err = activeVU.RunOnce()
 			assert.NoError(t, err)
 			assert.True(t, fnCalled, "fn() not called")
@@ -662,7 +675,9 @@ func TestVUIntegrationGroups(t *testing.T) {
 				assert.Equal(t, "my group", g.Parent.Name)
 				assert.Equal(t, r.GetDefaultGroup(), g.Parent.Parent)
 			})
-			activeVU := vu.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			activeVU := vu.Activate(&lib.VUActivationParams{RunContext: ctx})
 			err = activeVU.RunOnce()
 			assert.NoError(t, err)
 			assert.True(t, fnOuterCalled, "fnOuter() not called")
@@ -694,7 +709,9 @@ func TestVUIntegrationMetrics(t *testing.T) {
 				return
 			}
 
-			activeVU := vu.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			activeVU := vu.Activate(&lib.VUActivationParams{RunContext: ctx})
 			err = activeVU.RunOnce()
 			assert.NoError(t, err)
 			sampleCount := 0
@@ -766,7 +783,9 @@ func TestVUIntegrationInsecureRequests(t *testing.T) {
 						return
 					}
 
-					vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+					ctx, cancel := context.WithCancel(context.Background())
+					defer cancel()
+					vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 					err = vu.RunOnce()
 					if data.errMsg != "" {
 						require.Error(t, err)
@@ -810,7 +829,9 @@ func TestVUIntegrationBlacklistOption(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 			err = vu.RunOnce()
 			require.Error(t, err)
 			assert.Contains(t, err.Error(), "IP (10.1.2.3) is in a blacklisted range (10.0.0.0/8)")
@@ -847,7 +868,9 @@ func TestVUIntegrationBlacklistScript(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 			err = vu.RunOnce()
 			require.Error(t, err)
 			assert.Contains(t, err.Error(), "IP (10.1.2.3) is in a blacklisted range (10.0.0.0/8)")
@@ -895,7 +918,9 @@ func TestVUIntegrationHosts(t *testing.T) {
 				return
 			}
 
-			vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 			err = vu.RunOnce()
 			if !assert.NoError(t, err) {
 				return
@@ -968,7 +993,9 @@ func TestVUIntegrationTLSConfig(t *testing.T) {
 					if !assert.NoError(t, err) {
 						return
 					}
-					vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+					ctx, cancel := context.WithCancel(context.Background())
+					defer cancel()
+					vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 					err = vu.RunOnce()
 					if data.errMsg != "" {
 						require.Error(t, err)
@@ -1013,7 +1040,9 @@ func TestVUIntegrationHTTP2(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 			err = vu.RunOnce()
 			assert.NoError(t, err)
 
@@ -1039,7 +1068,9 @@ func TestVUIntegrationOpenFunctionError(t *testing.T) {
 
 	initVU, err := r.NewVU(1, make(chan stats.SampleContainer, 100))
 	assert.NoError(t, err)
-	vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 	err = vu.RunOnce()
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "only available to init code")
@@ -1088,7 +1119,9 @@ func TestVUIntegrationCookiesReset(t *testing.T) {
 			if !assert.NoError(t, err) {
 				return
 			}
-			vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 			for i := 0; i < 2; i++ {
 				err = vu.RunOnce()
 				assert.NoError(t, err)
@@ -1146,7 +1179,9 @@ func TestVUIntegrationCookiesNoReset(t *testing.T) {
 				return
 			}
 
-			vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 			err = vu.RunOnce()
 			assert.NoError(t, err)
 
@@ -1181,7 +1216,9 @@ func TestVUIntegrationVUID(t *testing.T) {
 				return
 			}
 
-			vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 			err = vu.RunOnce()
 			assert.NoError(t, err)
 		})
@@ -1277,7 +1314,9 @@ func TestVUIntegrationClientCerts(t *testing.T) {
 				r.Logger, _ = logtest.NewNullLogger()
 				initVU, err := r.NewVU(1, make(chan stats.SampleContainer, 100))
 				if assert.NoError(t, err) {
-					vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+					ctx, cancel := context.WithCancel(context.Background())
+					defer cancel()
+					vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 					err := vu.RunOnce()
 					require.Error(t, err)
 					assert.Contains(t, err.Error(), "remote error: tls: bad certificate")
@@ -1324,7 +1363,9 @@ func TestVUIntegrationClientCerts(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				initVU, err := r.NewVU(1, make(chan stats.SampleContainer, 100))
 				if assert.NoError(t, err) {
-					vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+					ctx, cancel := context.WithCancel(context.Background())
+					defer cancel()
+					vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 					err := vu.RunOnce()
 					assert.NoError(t, err)
 				}
@@ -1469,7 +1510,9 @@ func TestArchiveRunningIntegrity(t *testing.T) {
 			require.NoError(t, err)
 			initVU, err := r.NewVU(1, ch)
 			require.NoError(t, err)
-			vu := initVU.Activate(&lib.VUActivationParams{RunContext: context.Background()})
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			vu := initVU.Activate(&lib.VUActivationParams{RunContext: ctx})
 			err = vu.RunOnce()
 			require.NoError(t, err)
 		})
